@@ -1,20 +1,28 @@
 var container;
 var camera, scene, renderer;
 var earth;
+var ship;
 var mouseX = 0, mouseY = 0;
 var boost = 1; //ускорение
+var mouseDown = 0;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 init();
 animate();
 function init() {
+    document.onmousedown = function() { 
+        ++mouseDown;
+    }
+    document.onmouseup = function() {
+        --mouseDown;
+    }
 
     container = document.getElementById( 'scene' );
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.position.z = 500;
     scene = new THREE.Scene();
     earth = new THREE.Group();
-    scene.add( earth );
+    scene.add(earth);
     // earth
     var loader = new THREE.TextureLoader();
     //FIXME
@@ -29,7 +37,7 @@ function init() {
     var canvas = document.createElement( 'canvas' );
     canvas.width = 128;
     canvas.height = 128;
-    var context = canvas.getContext( '2d' );
+    var context = canvas.getContext('2d');
     var gradient = context.createRadialGradient(
                     canvas.width / 2,
                     canvas.height / 2,
@@ -49,9 +57,8 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight - 70);
     container.appendChild( renderer.domElement );
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    document.body.addEventListener( 'mousewheel', mousewheel, false );
-    document.body.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
-
+    document.addEventListener( 'mousewheel', mousewheel, false );
+    document.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
     window.addEventListener( 'resize', onWindowResize, false );
 }
 
@@ -61,11 +68,6 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight );
-}
-function onDocumentMouseMove( event ) {
-    //TODO движение камеры только при нажатии левой кнопки например
-   //mouseX = ( event.clientX - windowHalfX );
-   //mouseY = ( event.clientY - windowHalfY );
 }
 
 function mousewheel( e ) {      
@@ -99,13 +101,31 @@ function mousewheel( e ) {
     cPos.z = nz;
 }
 
+
+function onDocumentMouseMove(event) {
+    if (mouseDown) {
+        mouseX = (event.clientX - windowHalfX);
+        mouseY = (event.clientY - windowHalfY);
+        //TODO
+    }
+}
+
+
 function animate() {
     requestAnimationFrame(animate);
     render();
 }
+
+function onWindowResize() {
+    windowHalfX = window.innerWidth / 2;
+    windowHalfY = window.innerHeight / 2;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
 function render() {
     camera.lookAt(earth.position);
-
     updateShipOrbit();
     updateEarthRotation();
     updateEarthSolRotation();
@@ -113,16 +133,18 @@ function render() {
 }
 
 function updateShipOrbit() {
-    
+
 }
 
 function updateEarthRotation() {
-    //earth.rotation.y -= y * boost;
-    //earth.rotation.x -= x * boost;
-    //earth.rotation.z -= z * boost;
+    //TODO
+    earth.rotation.y -= 0.001 * boost;
+    earth.rotation.x -= 0.001 * boost;
+    earth.rotation.z -= 0.001 * boost;
 }
 
 function updateEarthSolRotation() {
+    //TODO
     //earth.x -= x * boost;
     //earth.y -= y * boost;
     //earth.z -= z * boost;
