@@ -1,7 +1,8 @@
 var container;
 var camera, scene, renderer;
-var group;
+var earth;
 var mouseX = 0, mouseY = 0;
+var boost = 1; //ускорение
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 init();
@@ -12,17 +13,17 @@ function init() {
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.position.z = 500;
     scene = new THREE.Scene();
-    group = new THREE.Group();
-    scene.add( group );
+    earth = new THREE.Group();
+    scene.add( earth );
     // earth
     var loader = new THREE.TextureLoader();
     //FIXME
     var imgurl = "../../static/img/land_ocean_ice_cloud_2048.jpg";
-    loader.load(imgurl, function ( texture ) {
+    loader.load(imgurl, function (texture) {
                     var geometry = new THREE.SphereGeometry( 200, 30, 30 );
-                    var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } );
-                    var mesh = new THREE.Mesh( geometry, material );
-                    group.add( mesh );
+                    var material = new THREE.MeshBasicMaterial({ map: texture, overdraw: 0.5 });
+                    var mesh = new THREE.Mesh(geometry, material);
+                    earth.add(mesh);
     } );
 
     var canvas = document.createElement( 'canvas' );
@@ -48,7 +49,9 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight - 70);
     container.appendChild( renderer.domElement );
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-                //
+    document.body.addEventListener( 'mousewheel', mousewheel, false );
+    document.body.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+
     window.addEventListener( 'resize', onWindowResize, false );
 }
 
@@ -64,15 +67,63 @@ function onDocumentMouseMove( event ) {
    //mouseX = ( event.clientX - windowHalfX );
    //mouseY = ( event.clientY - windowHalfY );
 }
-            //
+
+function mousewheel( e ) {      
+    var d = ((typeof e.wheelDelta != "undefined")?(-e.wheelDelta):e.detail);
+    d = 100 * ((d>0)?1:-1);
+
+    var cPos = camera.position;
+    if (isNaN(cPos.x) || isNaN(cPos.y) || isNaN(cPos.y))
+      return;
+
+    var r = cPos.x * cPos.x + cPos.y * cPos.y;
+    var sqr = Math.sqrt(r);
+    var sqrZ = Math.sqrt(cPos.z * cPos.z + r);
+
+
+    var nx = cPos.x + ((r==0)?0:(d * cPos.x/sqr));
+    var ny = cPos.y + ((r==0)?0:(d * cPos.y/sqr));
+    var nz = cPos.z + ((sqrZ==0)?0:(d * cPos.z/sqrZ));
+
+    if (nx > 2000 || ny > 2000 || nz > 2000)
+        return;
+
+    if (Math.sqrt(nx*nx + ny*ny + nz*nz) < 300)
+        return; 
+
+    if (isNaN(nx) || isNaN(ny) || isNaN(nz))
+      return;
+
+    cPos.x = nx;
+    cPos.y = ny;
+    cPos.z = nz;
+}
+
 function animate() {
-    requestAnimationFrame( animate );
+    requestAnimationFrame(animate);
     render();
 }
 function render() {
-    camera.position.x += ( mouseX - camera.position.x ) * 0.05;
-    camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
-    camera.lookAt( scene.position );
-    group.rotation.y -= 0.001;
-    renderer.render( scene, camera );
+    camera.lookAt(earth.position);
+
+    updateShipOrbit();
+    updateEarthRotation();
+    updateEarthSolRotation();
+    renderer.render(scene, camera);
+}
+
+function updateShipOrbit() {
+    
+}
+
+function updateEarthRotation() {
+    //earth.rotation.y -= y * boost;
+    //earth.rotation.x -= x * boost;
+    //earth.rotation.z -= z * boost;
+}
+
+function updateEarthSolRotation() {
+    //earth.x -= x * boost;
+    //earth.y -= y * boost;
+    //earth.z -= z * boost;
 }
