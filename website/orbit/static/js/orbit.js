@@ -7,10 +7,16 @@ var boost = 1; //ускорение
 var mouseDown = 0;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
+
+var speedArray;
+var posArray;
+
 init();
 animate();
 function init() {
-    document.onmousedown = function() { 
+    loadSampleOrbit();
+
+    document.onmousedown = function() {
         ++mouseDown;
     }
     document.onmouseup = function() {
@@ -148,4 +154,44 @@ function updateEarthSolRotation() {
     //earth.x -= x * boost;
     //earth.y -= y * boost;
     //earth.z -= z * boost;
+}
+
+function loadSampleOrbit() {
+    var xhr;
+    if (window.XMLHttpRequest) {
+        xhr = new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+
+    xhr.onreadystatechange = function(){
+        console.log(xhr.responseText);
+        var arr = xhr.responseText.split('\n');
+
+        posArray = new Array(arr.length);
+        speedArray = new Array(arr.length);
+
+        for (var i = 0; i < arr.length; i++) {
+            var line = arr[i].split(' ');
+
+            var position = new Array(3);
+            position[0] = line[1];
+            position[1] = line[2];
+            position[2] = line[3];
+
+            posArray[i] = position;
+
+            console.log("Pos " + i + " X: " + posArray[i][0] + "Y: " + posArray[i][1] + "Z: " + posArray[i][2]);
+
+            speed = new Array(3);
+            speed[0] = line[4];
+            speed[1] = line[5];
+            speed[2] = line[6];
+
+            speedArray[i] = speed;
+        }
+    };
+
+    xhr.open("GET","../../static/js/orbit.xyzv");
+    xhr.send();
 }
